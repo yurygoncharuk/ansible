@@ -1,0 +1,1 @@
+UserParameter=memcache[*],/bin/echo -e "stats\nquit" | nc {{ mgmt_ip }} 11211 | grep "STAT $1 " | awk '{print $$3}'

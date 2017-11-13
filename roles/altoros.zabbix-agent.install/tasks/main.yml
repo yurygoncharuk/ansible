@@ -1,0 +1,16 @@
+---
+
+- name: add zabbix repository
+  apt:
+    deb: http://repo.zabbix.com/zabbix/3.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.0-1+trusty_all.deb
+
+- name: install zabbix-agent
+  apt:
+    name: zabbix-agent
+    state: latest
+    update_cache: yes
+
+- name: write the zabbix-agent config file
+  template: src=zabbix_agentd.conf.j2 dest=/etc/zabbix/zabbix_agentd.conf
+  notify:
+  - restart zabbix-agent

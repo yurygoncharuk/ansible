@@ -1,0 +1,81 @@
+---
+
+- name: get connection string to mysql
+  shell: cat /etc/{{ item }}/{{ item }}.conf | egrep -o "mysql.*\?" | head -1 | sed '$ s/.$//'
+  register: result
+  with_items: 
+  - keystone
+  - nova
+  - cinder
+  - neutron
+  when: inventory_hostname in groups['controllers']
+
+- name: get rabbit information
+  shell: cat /etc/rabbitmq/rabbitmq.config | egrep -o "(default_user.*>>|default_pass.*>>)" | awk '{ print $2}' | sed 's/[<\">]//g'
+  register: rabbit
+  when: inventory_hostname in groups['controllers']
+
+- name: get haproxy's management ip
+  shell: cat /etc/haproxy/conf.d/010-stats.cfg | grep -o -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'
+  register: haip
+  when: inventory_hostname in groups['controllers']
+
+- name: write controller's configs
+  template: src={{ item }}.j2 dest=/etc/zabbix/{{ item }}
+  with_items:
+  - check_db.conf
+  - check_api.conf
+  - check_rabbit.conf
+  when: inventory_hostname in groups['controllers']
+
+- name: copy scripts and configs to hosts
+  copy:
+    src: "{{ item.folder }}"
+    dest: /etc/zabbix/
+    mode: "{{ item.made }}"
+  with_items:
+  - { folder: 'scripts', made: '0755'}
+  - { folder: 'zabbix_agentd.d', made: '0644'}
+
+- name: write controller's zabbix_agentd.d configs
+  template: src={{ item }}.j2 dest=/etc/zabbix/zabbix_agentd.d/{{ item }}
+  with_items:
+  - cinder.api.status.conf
+  - glance.api.status.conf
+  - keystone.api.status.conf
+  - keystone.service.api.status.conf
+  - memcache.conf
+  - neutron.api.status.conf
+  - nova.api.status.conf
+  - vip.cinder.api.status.conf
+  - vip.glance.api.status.conf
+  - vip.keystone.api.status.conf
+  - vip.keystone.service.api.status.conf
+  - vip.nova.api.status.conf
+  when: inventory_hostname in groups['controllers']
+
+- name: update iptable
+  lineinfile:
+    dest: /etc/iptables/rules.v4
+    insertafter: '^-A INPUT -s '
+    line: '-A INPUT -s {{ host_net }}/24 -p tcp -m multiport --ports 10050 -m comment --comment "10050 ssh from {{ host_net }}/24" -j ACCEPT'
+  notify:
+  - restart iptables
+
+- name: no askpass sudo pass for zabbix
+  lineinfile:
+    dest: /etc/sudoers
+    insertafter: '^root'
+    line: 'zabbix ALL=(ALL) NOPASSWD: ALL'
+
+- name: install dependency
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+  - iptstate
+  - smartmontools
+
+- name: restart zabbix-agent
+  service: name=zabbix-agent state=restarted

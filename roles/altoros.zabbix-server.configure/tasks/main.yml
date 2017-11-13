@@ -1,0 +1,124 @@
+---
+- name: Create a new controller's host or update an existing host's info
+  local_action:
+    module: zabbix_host
+    server_url: "{{ zabbix_server }}"
+    login_user: "{{ zabbix_user }}"
+    login_password: "{{ zabbix_pass }}"
+    host_name: "{{ansible_hostname}}.openstack-den.altoros.com"
+    host_groups:
+      - OpenStack
+    link_templates:
+      - Template App HAProxy
+      - Template App Iptables Stats
+      - Template App Memcache
+      - Template App MySQL
+      - Template App OpenStack Cinder API
+      - Template App OpenStack Cinder API check
+      - Template App OpenStack Cinder Scheduler
+      - Template App OpenStack Glance API
+      - Template App OpenStack Glance API check
+      - Template App OpenStack Glance Registry
+      - Template App OpenStack HA RabbitMQ
+      - Template App OpenStack Horizon
+      - Template App OpenStack Keystone
+      - Template App OpenStack Keystone API check
+      - Template App OpenStack Neutron API check
+      - Template App OpenStack Neutron DHCP Agent
+      - Template App OpenStack Neutron L3 Agent
+      - Template App OpenStack Neutron Metadata Agent
+      - Template App OpenStack Neutron OVS Agent
+      - Template App OpenStack Neutron Server
+      - Template App OpenStack Nova API
+      - Template App OpenStack Nova API OSAPI
+      - Template App OpenStack Nova API OSAPI check
+      - Template App OpenStack Nova Cert
+      - Template App OpenStack Nova Conductor
+      - Template App OpenStack Nova ConsoleAuth
+      - Template App OpenStack Nova novncproxy
+      - Template App OpenStack Nova Scheduler
+      - Template App OpenStack Open vSwitch
+      - Template App OpenStack Swift Account
+      - Template App OpenStack Swift Container
+      - Template App OpenStack Swift Object
+      - Template App OpenStack Swift Proxy
+      - Template App Zabbix Agent
+      - Template Fuel OS Linux
+      - Template OS Controller
+      - Template_HDD_SMARTMONTOOLS_2_WITH_LLD
+    status: enabled
+    state: present
+    inventory_mode: automatic
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ host_ip }}"
+        dns: ""
+        port: 10050
+  when: inventory_hostname in groups['controllers']
+
+- name: Create a new compute's host or update an existing host's info
+  local_action:
+    module: zabbix_host
+    server_url: "{{ zabbix_server }}"
+    login_user: "{{ zabbix_user }}"
+    login_password: "{{ zabbix_pass }}"
+    host_name: "{{ansible_hostname}}.openstack-den.altoros.com"
+    host_groups:
+      - OpenStack
+    link_templates:
+      - Template App OpenStack Cinder Volume
+      - Template App Iptables Stats
+      - Template App OpenStack Libvirt
+      - Template App OpenStack Neutron OVS Agent
+      - Template App OpenStack Nova Compute
+      - Template App OpenStack Open vSwitch
+      - Template App Zabbix Agent
+      - Template Fuel OS Linux
+      - Template NTP binding
+      - Template_HDD_SMARTMONTOOLS_2_WITH_LLD
+    status: enabled
+    state: present
+    inventory_mode: automatic
+    interfaces:
+      - type: 1
+        main: 1
+        useip: 1
+        ip: "{{ host_ip }}"
+        dns: ""
+        port: 10050
+  when: inventory_hostname in groups['computes']
+
+- name: Create a new controller's host macro or update an existing macro's value
+  local_action:
+    module: zabbix_hostmacro
+    server_url: "{{ zabbix_server }}"
+    login_user: "{{ zabbix_user }}"
+    login_password: "{{ zabbix_pass }}"
+    host_name: "{{ansible_hostname}}.openstack-den.altoros.com"
+    macro_name: "{{ item.name }}"
+    macro_value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { name: 'IP_MANAGEMENT', value: "{{ mgmt_ip }}" }
+    - { name: 'IP_PUBLIC', value: "{{ public_ip }}" }
+    - { name: 'IP_STORAGE', value: "{{ storage_ip }}" }
+    - { name: 'APACHE_NAME', value: "{{ apache_name }}" }
+    - { name: 'APACHE_USER', value: "{{ apache_user }}" }
+  when: inventory_hostname in groups['controllers']
+
+- name: Create a new compute's host macro or update an existing macro's value
+  local_action:
+    module: zabbix_hostmacro
+    server_url: "{{ zabbix_server }}"
+    login_user: "{{ zabbix_user }}"
+    login_password: "{{ zabbix_pass }}"
+    host_name: "{{ansible_hostname}}.openstack-den.altoros.com"
+    macro_name: "{{ item.name }}"
+    macro_value: "{{ item.value }}"
+    state: present
+  with_items:
+    - { name: 'IP_MANAGEMENT', value: "{{ mgmt_ip }}" }
+    - { name: 'IP_STORAGE', value: "{{ storage_ip }}" }
+  when: inventory_hostname in groups['computes']

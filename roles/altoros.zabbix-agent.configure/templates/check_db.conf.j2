@@ -1,0 +1,39 @@
+[query_db]
+log_level=CRITICAL
+#Count tokens in keystone db
+token_count_connection={{ result.results[0].stdout }}
+token_count_query=select count(*) from token
+#Count instances in error state
+instance_error_connection={{ result.results[1].stdout }}
+instance_error_query=select count(*) from instances where vm_state='error' and deleted=0
+#Count offline services - nova
+services_offline_nova_connection={{ result.results[1].stdout }}
+services_offline_nova_query=select count(*) from services where disabled=0 and deleted=0 and timestampdiff(SECOND,updated_at,utc_timestamp())>60
+#Count running instances
+instance_count_connection={{ result.results[1].stdout }}
+instance_count_query=select count(*) from instances where deleted=0 and vm_state='active'
+#Sum all vcpus in cluster
+cpu_total_connection={{ result.results[1].stdout }}
+cpu_total_query=select ifnull(sum(vcpus), 0) from compute_nodes where deleted=0
+#Sum used vcpus in cluster
+cpu_used_connection={{ result.results[1].stdout }}
+cpu_used_query=select ifnull(sum(vcpus), 0) from instances where deleted=0 and vm_state='active'
+#Sum all memory in cluster
+ram_total_connection={{ result.results[1].stdout }}
+ram_total_query=select ifnull(sum(memory_mb), 0) from compute_nodes where deleted=0
+#Sum used memory in cluster
+ram_used_connection={{ result.results[1].stdout }}
+ram_used_query=select ifnull(sum(memory_mb), 0) from instances where deleted=0 and vm_state='active'
+#Count offline services - cinder
+services_offline_cinder_connection={{ result.results[2].stdout }}
+services_offline_cinder_query=select count(*) from services where disabled=0 and deleted=0 and timestampdiff(SECOND,updated_at,utc_timestamp())>60
+#Count offline services - neutron
+services_offline_neutron_connection={{ result.results[3].stdout }}
+services_offline_neutron_query=select count(*) from agents where admin_state_up=1 and timestampdiff(SECOND,heartbeat_timestamp,utc_timestamp())>60
+# WSREP
+wsrep_status_connection={{ result.results[1].stdout }}
+wsrep_status_query=select replace(replace(replace(VARIABLE_VALUE, 'Primary', 1), 'Non-Primary', 2), 'Disconnected', 3) as value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_cluster_status';
+wsrep_ready_connection={{ result.results[1].stdout }}
+wsrep_ready_query=select replace(replace(VARIABLE_VALUE, 'ON', 1), 'OFF', 0) as value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_ready'
+wsrep_connected_connection={{ result.results[1].stdout }}
+wsrep_connected_query=select replace(replace(VARIABLE_VALUE, 'ON', 1), 'OFF', 0) as value from information_schema.GLOBAL_STATUS where VARIABLE_NAME = 'wsrep_connected'

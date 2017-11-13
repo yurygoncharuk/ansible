@@ -1,0 +1,9 @@
+zabbix_server: http://zabbixserver/zabbix
+zabbix_user: username
+zabbix_pass: userpass
+host_ip: "{{ ansible_br_fw_admin.ipv4.address }}"
+mgmt_ip: "{{ ansible_br_mgmt.ipv4.address }}"
+public_ip: "{{ ansible_br_ex.ipv4.address }}"
+storage_ip: "{{ ansible_br_storage.ipv4.address }}"
+apache_name: apache2
+apache_user: www-data
