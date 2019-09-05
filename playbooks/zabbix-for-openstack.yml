@@ -2,6 +2,6 @@
 - hosts: all 
   become: yes
   roles:
-    - altoros.zabbix-agent.install
-    - altoros.zabbix-agent.configure
-    - altoros.zabbix-server.configure
+    - zabbix-agent.install
+    - zabbix-agent.configure
+    - zabbix-server.configure
