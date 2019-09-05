@@ -4,12 +4,12 @@
 ## Roles:
 
 --------------------------------------------------------------------------------
-### 1. altoros.zabbix-agent.install
+### 1. zabbix-agent.install
 
 Installing and configuration of the Zabbix agent. Uses packages from http://www.zabbix.com.
 
 --------------------------------------------------------------------------------
-### 2. altoros.zabbix-agent.configure
+### 2. zabbix-agent.configure
 
 Getting some information from controller's files for configuring templates.
 Adding configs, scripts for monitoring OpenStack's services and installing some dependency for it.
@@ -25,7 +25,7 @@ Adding configs, scripts for monitoring OpenStack's services and installing some 
 - host_net: update interface name if it necessary
 
 --------------------------------------------------------------------------------
-### 3. altoros.zabbix-server.configure
+### 3. zabbix-server.configure
 
 Creating a new host or updating an existing in Zabbix server
 Creating a new macro for host or updating an existing in Zabbix server
